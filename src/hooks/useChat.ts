@@ -2,32 +2,125 @@ import { useState, useCallback } from "react";
 
 type Message = { role: "user" | "assistant"; content: string };
 
-// Mock AI responses for immediate usability
+// Simple equation solver
+const solveEquation = (input: string): string | null => {
+  // Basic arithmetic
+  const arithmeticMatch = input.match(/(?:what\s+is\s+|calculate\s+|solve\s+)?(\d+(?:\.\d+)?)\s*([\+\-\*\/\^])\s*(\d+(?:\.\d+)?)/i);
+  if (arithmeticMatch) {
+    const [, a, op, b] = arithmeticMatch;
+    const numA = parseFloat(a);
+    const numB = parseFloat(b);
+    let result: number;
+    switch (op) {
+      case '+': result = numA + numB; break;
+      case '-': result = numA - numB; break;
+      case '*': result = numA * numB; break;
+      case '/': result = numB !== 0 ? numA / numB : NaN; break;
+      case '^': result = Math.pow(numA, numB); break;
+      default: return null;
+    }
+    return `${numA} ${op} ${numB} = ${result}`;
+  }
+
+  // Square root
+  const sqrtMatch = input.match(/(?:square\s+root|sqrt)\s+(?:of\s+)?(\d+(?:\.\d+)?)/i);
+  if (sqrtMatch) {
+    const num = parseFloat(sqrtMatch[1]);
+    return `√${num} = ${Math.sqrt(num).toFixed(4)}`;
+  }
+
+  // Percentage
+  const percentMatch = input.match(/(\d+(?:\.\d+)?)\s*%\s*(?:of\s+)?(\d+(?:\.\d+)?)/i);
+  if (percentMatch) {
+    const [, percent, num] = percentMatch;
+    const result = (parseFloat(percent) / 100) * parseFloat(num);
+    return `${percent}% of ${num} = ${result}`;
+  }
+
+  // Speed of light calculations
+  if (/speed\s+of\s+light/i.test(input)) {
+    return "The speed of light (c) = 299,792,458 m/s ≈ 3 × 10⁸ m/s";
+  }
+
+  // Light year
+  if (/light\s*year/i.test(input)) {
+    return "1 light year = 9.461 × 10¹² km = 5.879 × 10¹² miles";
+  }
+
+  // Schwarzschild radius
+  const schwarzschildMatch = input.match(/schwarzschild|event\s+horizon.*?(\d+(?:\.\d+)?)\s*(?:solar\s+masses?|M☉)/i);
+  if (schwarzschildMatch) {
+    const solarMasses = parseFloat(schwarzschildMatch[1]) || 1;
+    const radius = 2.95 * solarMasses; // km
+    return `Schwarzschild radius for ${solarMasses} M☉ = ${radius.toFixed(2)} km`;
+  }
+
+  // Escape velocity
+  if (/escape\s+velocity/i.test(input)) {
+    return "Escape velocity formula: v = √(2GM/r)\nEarth's escape velocity = 11.2 km/s";
+  }
+
+  return null;
+};
+
+// Mock AI responses
 const mockResponses: Record<string, { scientific: string; simplified: string }> = {
   "black hole": {
-    scientific: "A black hole is a region of spacetime where gravity is so intense that nothing—not even light or other electromagnetic waves—can escape once past the event horizon. They form when massive stars (typically >20 solar masses) exhaust their nuclear fuel and undergo gravitational collapse. The core implodes past the Schwarzschild radius, creating a singularity of theoretically infinite density. Black holes are characterized by three properties: mass, charge, and angular momentum (the 'no-hair theorem'). Stellar black holes range from 5-100 solar masses, while supermassive black holes at galactic centers can exceed billions of solar masses.",
-    simplified: "Imagine a cosmic vacuum cleaner so powerful that even light can't escape! 🌑 A black hole forms when a giant star runs out of fuel and collapses under its own weight, squishing into an incredibly tiny, super-dense point. It's like crushing the entire Earth into something the size of a marble—gravity becomes crazy strong!"
+    scientific: "A black hole is a region of spacetime where gravity is so intense that nothing—not even light—can escape once past the event horizon. They form when massive stars (>20 solar masses) exhaust nuclear fuel and undergo gravitational collapse. The core implodes past the Schwarzschild radius, creating a singularity of theoretically infinite density. Black holes are characterized by mass, charge, and angular momentum (no-hair theorem).",
+    simplified: "A black hole is like a cosmic vacuum cleaner! 🌑 When a huge star dies, it squishes down so tight that its gravity becomes super strong—nothing can escape, not even light! That's why we call it 'black.'"
   },
   "dark matter": {
-    scientific: "Dark matter is a hypothetical form of matter that doesn't emit, absorb, or reflect electromagnetic radiation, making it invisible to the entire electromagnetic spectrum. Its existence is inferred from gravitational effects on visible matter, gravitational lensing, and the cosmic microwave background. Evidence includes galaxy rotation curves (Vera Rubin's work), the Bullet Cluster observations, and large-scale structure formation models. Dark matter constitutes approximately 27% of the universe's mass-energy content. Leading candidates include WIMPs (Weakly Interacting Massive Particles), axions, and sterile neutrinos.",
-    simplified: "Dark matter is like cosmic invisible glue! 🔮 We can't see it, touch it, or detect it directly—but we know it's there because galaxies spin way faster than they should. Without this mystery stuff holding things together, galaxies would fly apart like water off a spinning umbrella!"
+    scientific: "Dark matter is hypothetical matter that doesn't emit or interact with electromagnetic radiation. Evidence includes galaxy rotation curves, gravitational lensing, and cosmic microwave background observations. It constitutes ~27% of the universe's mass-energy. Leading candidates include WIMPs and axions.",
+    simplified: "Dark matter is invisible cosmic glue! 🔮 We can't see it, but we know it's there because galaxies spin faster than they should. It's like knowing there's wind even though you can't see air!"
   },
   "general relativity": {
-    scientific: "General relativity, published by Einstein in 1915, describes gravity not as a force but as curvature of spacetime caused by mass and energy. The Einstein field equations (Gμν + Λgμν = 8πG/c⁴ Tμν) relate spacetime geometry to mass-energy distribution. Key predictions include gravitational time dilation, gravitational lensing, gravitational waves, and the precession of Mercury's perihelion. The theory has been confirmed through numerous experiments including the Pound-Rebka experiment, GPS satellite corrections, LIGO gravitational wave detections, and the Event Horizon Telescope's black hole images.",
-    simplified: "Einstein figured out that gravity isn't a force pulling you down—it's actually space being curved! 🎳 Imagine a bowling ball on a trampoline creating a dip. Now roll a marble nearby, and it curves toward the bowling ball. That's exactly what planets do around the Sun—they're following the curves in space itself!"
+    scientific: "General relativity (Einstein, 1915) describes gravity as curvature of spacetime caused by mass-energy. The Einstein field equations Gμν = 8πG/c⁴ Tμν relate geometry to mass-energy distribution. Confirmed by gravitational lensing, time dilation, gravitational waves (LIGO), and black hole imaging.",
+    simplified: "Einstein figured out that gravity isn't a force—it's curved space! 🎳 Put a bowling ball on a trampoline and it makes a dip. Planets roll around the Sun because space itself is curved!"
   },
   "white hole": {
-    scientific: "A white hole is a theoretical region of spacetime that cannot be entered from the outside, but from which matter and light may escape. It's essentially the time-reversal of a black hole, predicted by the mathematics of general relativity. The Schwarzschild metric allows for both black hole and white hole solutions. However, white holes are considered physically implausible because they violate the second law of thermodynamics and would be unstable. Some theories suggest the Big Bang itself could be interpreted as a white hole, or that black holes in our universe could be connected to white holes in other universes via wormholes.",
-    simplified: "A white hole is like a black hole running backwards in time! ⚪ Instead of sucking everything in, it would spit everything out. It's a cool idea from Einstein's math, but scientists think they probably can't exist in real life—it would be like watching a broken egg un-break and jump back into your hand!"
+    scientific: "A white hole is a theoretical spacetime region that cannot be entered but from which matter and light may escape—the time-reversal of a black hole. Mathematically predicted by general relativity but considered physically implausible due to thermodynamic violations.",
+    simplified: "A white hole is a black hole playing backwards! ⚪ Instead of sucking things in, it would spit everything out. Scientists think they probably can't exist in real life though."
+  },
+  "neutron star": {
+    scientific: "A neutron star is an ultra-dense stellar remnant formed from gravitational collapse of massive stars (8-20 M☉). Composed almost entirely of neutrons, with densities ~10¹⁷ kg/m³. Typical radius ~10 km, mass 1.4-2 M☉. Features include extreme magnetic fields (10⁸-10¹⁵ T) and rapid rotation.",
+    simplified: "A neutron star is like a giant atomic nucleus in space! ⭐ It's a dead star so squished that a teaspoon of it would weigh as much as a mountain. They spin super fast—some spin hundreds of times per second!"
+  },
+  "big bang": {
+    scientific: "The Big Bang theory describes the universe's expansion from an extremely hot, dense initial state ~13.8 billion years ago. Evidence includes cosmic microwave background radiation, abundance of light elements, and Hubble's law of cosmic expansion. Not an explosion 'in' space but an expansion of space itself.",
+    simplified: "The Big Bang was the start of EVERYTHING! 💥 About 14 billion years ago, the entire universe was squished into a tiny dot, then it started expanding super fast. It's still expanding today!"
+  },
+  "gravitational wave": {
+    scientific: "Gravitational waves are ripples in spacetime caused by accelerating masses, predicted by Einstein in 1916 and directly detected by LIGO in 2015. They travel at the speed of light and are generated by cataclysmic events like merging black holes or neutron stars.",
+    simplified: "Gravitational waves are space ripples! 🌊 When huge things like black holes crash together, they make waves in space itself—like ripples when you throw a stone in a pond. We can detect them now!"
+  },
+  "supernova": {
+    scientific: "A supernova is a stellar explosion occurring at the end of a star's life. Type II supernovae result from core collapse in massive stars (>8 M☉). Type Ia supernovae occur in binary systems when a white dwarf exceeds the Chandrasekhar limit. They can outshine entire galaxies and produce heavy elements.",
+    simplified: "A supernova is a star's grand finale! 🎆 When a big star runs out of fuel, it explodes SO bright it can outshine a whole galaxy! It's like the biggest firework in the universe."
+  },
+  "exoplanet": {
+    scientific: "Exoplanets are planets orbiting stars outside our solar system. Over 5,000 confirmed as of 2024, detected via transit photometry, radial velocity, and direct imaging. Categories include hot Jupiters, super-Earths, and potentially habitable worlds in stellar habitable zones.",
+    simplified: "Exoplanets are planets around other stars! 🪐 We've found thousands of them—some are giant gas balls, others are rocky like Earth. Some might even have water and could be home to alien life!"
+  },
+  "wormhole": {
+    scientific: "Wormholes are hypothetical topological features of spacetime creating shortcuts between distant points. Predicted by general relativity as Einstein-Rosen bridges. Traversable wormholes would require exotic matter with negative energy density. Currently theoretical with no observational evidence.",
+    simplified: "A wormhole is like a cosmic shortcut! 🕳️ Imagine folding a piece of paper so two dots touch—that's how a wormhole might connect far-away places in space. Great for sci-fi movies, but we haven't found one yet!"
   },
   default: {
-    scientific: "That's a fascinating question about the cosmos! The universe contains countless mysteries, from the quantum foam at the smallest scales to the cosmic web at the largest. Current astrophysics research continues to push the boundaries of our understanding, with missions like the James Webb Space Telescope revealing unprecedented details about the early universe, exoplanets, and stellar evolution. Each discovery often raises more questions than it answers, which is the beautiful nature of scientific inquiry.",
-    simplified: "Great question! The universe is full of amazing mysteries. Scientists are constantly discovering new things about space, from distant planets to ancient light from the beginning of time. Every answer we find leads to more questions—that's what makes exploring the cosmos so exciting! 🚀✨"
+    scientific: "That's a fascinating question about the cosmos! The universe contains countless mysteries from quantum scales to the cosmic web. Current research with instruments like the James Webb Space Telescope continues to expand our understanding of the early universe, exoplanets, and stellar evolution.",
+    simplified: "Great question! ✨ The universe is full of amazing things we're still figuring out. Scientists are always discovering new secrets about space, stars, and how everything works together!"
   }
 };
 
 const getMockResponse = (message: string, simplified: boolean): string => {
   const lowerMessage = message.toLowerCase();
+  
+  // Check for equation/calculation
+  const equationResult = solveEquation(message);
+  if (equationResult) {
+    return simplified 
+      ? `Here you go! 🧮\n\n${equationResult}`
+      : `Mathematical result:\n\n${equationResult}`;
+  }
   
   for (const [key, responses] of Object.entries(mockResponses)) {
     if (key !== "default" && lowerMessage.includes(key)) {
@@ -38,15 +131,15 @@ const getMockResponse = (message: string, simplified: boolean): string => {
   return simplified ? mockResponses.default.simplified : mockResponses.default.scientific;
 };
 
-// Simulate typewriter effect
+// Simulate smooth typewriter effect
 const simulateTyping = async (
   text: string,
   onChunk: (chunk: string) => void,
-  delayMs: number = 15
+  delayMs: number = 12
 ): Promise<void> => {
   const words = text.split(" ");
   for (let i = 0; i < words.length; i++) {
-    await new Promise((resolve) => setTimeout(resolve, delayMs));
+    await new Promise((resolve) => setTimeout(resolve, delayMs + Math.random() * 8));
     onChunk(words[i] + (i < words.length - 1 ? " " : ""));
   }
 };
@@ -82,6 +175,7 @@ export const useChat = () => {
 
     // If Supabase is not configured, use mock responses
     if (!supabaseUrl || !supabaseKey) {
+      await new Promise(r => setTimeout(r, 300)); // Brief thinking delay
       const mockResponse = getMockResponse(content, simplified);
       await simulateTyping(mockResponse, updateAssistant);
       setIsLoading(false);
@@ -102,7 +196,7 @@ export const useChat = () => {
       });
 
       if (!resp.ok) {
-        // Fallback to mock on API error
+        await new Promise(r => setTimeout(r, 300));
         const mockResponse = getMockResponse(content, simplified);
         await simulateTyping(mockResponse, updateAssistant);
         setIsLoading(false);
@@ -144,9 +238,9 @@ export const useChat = () => {
         }
       }
     } catch (e) {
-      // Fallback to mock on any error
       console.warn("API unavailable, using mock response:", e);
       assistantContent = "";
+      await new Promise(r => setTimeout(r, 300));
       const mockResponse = getMockResponse(content, simplified);
       await simulateTyping(mockResponse, updateAssistant);
     } finally {
