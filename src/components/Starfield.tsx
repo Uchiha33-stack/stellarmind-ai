@@ -13,68 +13,84 @@ interface Star {
 
 const Starfield = () => {
   const stars = useMemo<Star[]>(() => {
-    return Array.from({ length: 200 }, (_, i) => ({
+    return Array.from({ length: 250 }, (_, i) => ({
       id: i,
       x: Math.random() * 100,
       y: Math.random() * 100,
-      size: Math.random() * 2 + 0.5,
-      opacity: Math.random() * 0.7 + 0.3,
+      size: Math.random() * 2.5 + 0.8,
+      opacity: Math.random() * 0.8 + 0.4,
       delay: Math.random() * 5,
       duration: Math.random() * 3 + 2,
-      driftDuration: Math.random() * 30 + 20,
+      driftDuration: Math.random() * 40 + 25,
     }));
   }, []);
 
   const floatingStars = useMemo(() => {
-    return Array.from({ length: 30 }, (_, i) => ({
+    return Array.from({ length: 40 }, (_, i) => ({
       id: i,
       x: Math.random() * 100,
       y: Math.random() * 100,
-      size: Math.random() * 3 + 2,
+      size: Math.random() * 4 + 2,
       delay: Math.random() * 10,
-      duration: Math.random() * 20 + 15,
+      duration: Math.random() * 25 + 18,
     }));
   }, []);
 
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none">
-      {/* Deep space gradient */}
-      <div className="absolute inset-0 bg-space-gradient" />
-      
-      {/* Animated nebula glow effects */}
+      {/* Brighter deep space gradient */}
       <div 
-        className="absolute top-1/4 -left-1/4 w-3/4 h-3/4 rounded-full blur-[150px] animate-float-slow"
-        style={{ background: 'radial-gradient(circle, hsl(var(--nebula-purple) / 0.08) 0%, transparent 70%)' }}
+        className="absolute inset-0"
+        style={{ 
+          background: 'linear-gradient(135deg, hsl(235 45% 8%) 0%, hsl(250 40% 12%) 30%, hsl(220 50% 10%) 70%, hsl(240 35% 8%) 100%)'
+        }}
+      />
+      
+      {/* Bright central glow */}
+      <div 
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full rounded-full blur-[200px] animate-float"
+        style={{ background: 'radial-gradient(circle, hsl(var(--stellar-cyan) / 0.12) 0%, transparent 50%)' }}
+      />
+      
+      {/* Brighter animated nebula glow effects */}
+      <div 
+        className="absolute top-0 -left-1/4 w-full h-3/4 rounded-full blur-[180px] animate-float-slow"
+        style={{ background: 'radial-gradient(circle, hsl(var(--nebula-purple) / 0.18) 0%, transparent 60%)' }}
       />
       <div 
-        className="absolute bottom-1/4 -right-1/4 w-2/3 h-2/3 rounded-full blur-[120px] animate-drift"
+        className="absolute bottom-0 -right-1/4 w-3/4 h-3/4 rounded-full blur-[150px] animate-drift"
         style={{ 
-          background: 'radial-gradient(circle, hsl(var(--stellar-cyan) / 0.06) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, hsl(var(--stellar-cyan) / 0.15) 0%, transparent 60%)',
           animationDelay: '-5s'
         }}
       />
       <div 
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1/2 h-1/2 rounded-full blur-[100px] animate-float"
-        style={{ background: 'radial-gradient(circle, hsl(var(--stellar-cyan) / 0.03) 0%, transparent 70%)' }}
+        className="absolute top-1/3 right-1/4 w-1/2 h-1/2 rounded-full blur-[120px] animate-float"
+        style={{ 
+          background: 'radial-gradient(circle, hsl(280 70% 60% / 0.1) 0%, transparent 70%)',
+          animationDelay: '-3s'
+        }}
       />
       
-      {/* Background stars with drift animation */}
+      {/* Background stars with drift animation - brighter */}
       {stars.map((star) => (
         <div
           key={star.id}
-          className="absolute rounded-full bg-space-star will-change-transform"
+          className="absolute rounded-full will-change-transform"
           style={{
             left: `${star.x}%`,
             top: `${star.y}%`,
             width: `${star.size}px`,
             height: `${star.size}px`,
             opacity: star.opacity,
+            background: `radial-gradient(circle, hsl(0 0% 100%) 0%, hsl(0 0% 90%) 100%)`,
+            boxShadow: `0 0 ${star.size * 2}px ${star.size * 0.5}px hsl(0 0% 100% / 0.4)`,
             animation: `twinkle ${star.duration}s ease-in-out ${star.delay}s infinite, drift ${star.driftDuration}s ease-in-out ${star.delay}s infinite`,
           }}
         />
       ))}
       
-      {/* Larger floating accent stars */}
+      {/* Larger floating accent stars with glow */}
       {floatingStars.map((star) => (
         <div
           key={`float-${star.id}`}
@@ -84,28 +100,42 @@ const Starfield = () => {
             top: `${star.y}%`,
             width: `${star.size}px`,
             height: `${star.size}px`,
-            background: `radial-gradient(circle, hsl(var(--stellar-cyan)) 0%, hsl(var(--stellar-cyan) / 0.3) 50%, transparent 100%)`,
-            boxShadow: `0 0 ${star.size * 3}px ${star.size}px hsl(var(--stellar-cyan) / 0.3)`,
+            background: `radial-gradient(circle, hsl(var(--stellar-cyan)) 0%, hsl(var(--stellar-cyan) / 0.5) 50%, transparent 100%)`,
+            boxShadow: `0 0 ${star.size * 4}px ${star.size * 1.5}px hsl(var(--stellar-cyan) / 0.5)`,
             animation: `float-slow ${star.duration}s ease-in-out ${star.delay}s infinite`,
           }}
         />
       ))}
       
-      {/* Brighter accent stars */}
-      {[...Array(12)].map((_, i) => (
+      {/* Super bright accent stars */}
+      {[...Array(18)].map((_, i) => (
         <div
           key={`accent-${i}`}
-          className="absolute rounded-full bg-space-stellar will-change-transform"
+          className="absolute rounded-full will-change-transform"
           style={{
-            left: `${8 + i * 8}%`,
-            top: `${10 + (i % 4) * 22}%`,
-            width: "3px",
-            height: "3px",
-            boxShadow: "0 0 8px 3px hsl(var(--stellar-cyan) / 0.5)",
-            animation: `twinkle ${2 + i * 0.3}s ease-in-out ${i * 0.2}s infinite, drift ${25 + i * 2}s ease-in-out ${i}s infinite`,
+            left: `${5 + i * 5.5}%`,
+            top: `${8 + (i % 5) * 20}%`,
+            width: "4px",
+            height: "4px",
+            background: i % 3 === 0 ? 'hsl(var(--stellar-cyan))' : i % 3 === 1 ? 'hsl(var(--nebula-purple))' : 'hsl(0 0% 100%)',
+            boxShadow: i % 3 === 0 
+              ? "0 0 12px 5px hsl(var(--stellar-cyan) / 0.6)" 
+              : i % 3 === 1 
+              ? "0 0 12px 5px hsl(var(--nebula-purple) / 0.5)"
+              : "0 0 10px 4px hsl(0 0% 100% / 0.5)",
+            animation: `twinkle ${1.5 + i * 0.2}s ease-in-out ${i * 0.15}s infinite, drift ${20 + i * 1.5}s ease-in-out ${i * 0.5}s infinite`,
           }}
         />
       ))}
+      
+      {/* Shooting star effect - subtle horizontal streaks */}
+      <div 
+        className="absolute top-1/4 left-0 w-48 h-[1px] opacity-20"
+        style={{
+          background: 'linear-gradient(90deg, transparent 0%, hsl(var(--stellar-cyan)) 50%, transparent 100%)',
+          animation: 'drift 30s ease-in-out infinite',
+        }}
+      />
     </div>
   );
 };
