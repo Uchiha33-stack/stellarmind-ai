@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { History, Sparkles, BookOpen, Settings, ChevronLeft, ChevronRight, Orbit, Rocket, Star } from "lucide-react";
+import { History, Sparkles, BookOpen, ChevronLeft, ChevronRight, Orbit, Star, StickyNote } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -10,10 +10,10 @@ interface SidebarProps {
 
 const tabs = [
   { id: "chat", icon: Orbit, label: "Chat" },
-  { id: "explore", icon: Rocket, label: "Explore" },
   { id: "history", icon: History, label: "History" },
-  { id: "learn", icon: BookOpen, label: "Learn" },
   { id: "favorites", icon: Star, label: "Favorites" },
+  { id: "notes", icon: StickyNote, label: "Notes" },
+  { id: "learn", icon: BookOpen, label: "Learn" },
 ];
 
 const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {

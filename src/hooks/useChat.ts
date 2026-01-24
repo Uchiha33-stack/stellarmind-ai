@@ -131,16 +131,18 @@ const getMockResponse = (message: string, simplified: boolean): string => {
   return simplified ? mockResponses.default.simplified : mockResponses.default.scientific;
 };
 
-// Simulate smooth typewriter effect
+// Fast, smooth typewriter effect - outputs 3-4 words at a time for speed
 const simulateTyping = async (
   text: string,
   onChunk: (chunk: string) => void,
-  delayMs: number = 12
+  delayMs: number = 6
 ): Promise<void> => {
   const words = text.split(" ");
-  for (let i = 0; i < words.length; i++) {
-    await new Promise((resolve) => setTimeout(resolve, delayMs + Math.random() * 8));
-    onChunk(words[i] + (i < words.length - 1 ? " " : ""));
+  const chunkSize = 3; // Output multiple words at once for speed
+  for (let i = 0; i < words.length; i += chunkSize) {
+    await new Promise((resolve) => setTimeout(resolve, delayMs + Math.random() * 4));
+    const chunk = words.slice(i, i + chunkSize).join(" ");
+    onChunk(chunk + (i + chunkSize < words.length ? " " : ""));
   }
 };
 
@@ -175,7 +177,7 @@ export const useChat = () => {
 
     // If Supabase is not configured, use mock responses
     if (!supabaseUrl || !supabaseKey) {
-      await new Promise(r => setTimeout(r, 300)); // Brief thinking delay
+      await new Promise(r => setTimeout(r, 100)); // Super quick thinking
       const mockResponse = getMockResponse(content, simplified);
       await simulateTyping(mockResponse, updateAssistant);
       setIsLoading(false);
